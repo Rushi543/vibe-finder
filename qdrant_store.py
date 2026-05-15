@@ -7,8 +7,10 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
+    PayloadSchemaType,
 )
 from dotenv import load_dotenv
+import hashlib
 
 load_dotenv()
 
@@ -23,8 +25,8 @@ client = QdrantClient(
 
 def ensure_collection():
     """Create collection if it doesn't exist."""
-    existing = [c.name for c in client.get_collections().collections]
-    if COLLECTION_NAME not in existing:
+    if not client.collection_exists(collection_name=COLLECTION_NAME):
+
         client.create_collection(
             collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(
@@ -34,14 +36,24 @@ def ensure_collection():
         )
         print(f"Created collection: {COLLECTION_NAME}")
 
+        client.create_payload_index(
+            collection_name=COLLECTION_NAME,
+            field_name="username",
+            field_schema=PayloadSchemaType.KEYWORD,
+        )
+
+        print(f"Payload schema created")
+
 
 def store_user_vector(username: str, vector: list[float], metadata: dict):
     """Store or overwrite a user's vector in Qdrant."""
     ensure_collection()
 
     # Use a stable integer ID derived from username hash
-    point_id = abs(hash(username)) % (2**63)
-
+    point_id = get_point_id(username)
+    print(45,username)
+    print(46,repr(username))
+    print(point_id)
     client.upsert(
         collection_name=COLLECTION_NAME,
         points=[
@@ -61,12 +73,18 @@ def store_user_vector(username: str, vector: list[float], metadata: dict):
     print(f"Stored vector for {username} (id={point_id})")
 
 
+def get_point_id(username: str) -> int:
+    digest = hashlib.sha256(username.encode("utf-8")).hexdigest()
+    return int(digest[:16], 16)
+
+
 def find_similar_users(username: str, top_k: int = 5) -> list[dict] | None:
     """Find users most similar to the given username."""
     ensure_collection()
-
-    point_id = abs(hash(username)) % (2**63)
-
+    print(74,username)
+    print(75,repr(username))
+    point_id = get_point_id(username)
+    print(point_id)
     # Retrieve the user's vector first
     results = client.retrieve(
         collection_name=COLLECTION_NAME,
@@ -80,9 +98,9 @@ def find_similar_users(username: str, top_k: int = 5) -> list[dict] | None:
     user_vector = results[0].vector
 
     # Search for similar users, excluding self
-    hits = client.search(
+    hits = client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=user_vector,
+        query=user_vector,
         limit=top_k + 1,  # +1 because self will be in results
         with_payload=True,
         query_filter=Filter(
@@ -94,7 +112,7 @@ def find_similar_users(username: str, top_k: int = 5) -> list[dict] | None:
             ]
         ),
     )
-
+    print(hits)
     return [
         {
             "username": hit.payload["username"],
@@ -102,7 +120,7 @@ def find_similar_users(username: str, top_k: int = 5) -> list[dict] | None:
             "top_languages": hit.payload.get("top_languages", []),
             "top_topics": hit.payload.get("top_topics", []),
         }
-        for hit in hits
+        for hit in hits.points
     ]
 
 
