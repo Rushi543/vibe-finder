@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe Finder</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap');
+
+    :root {
+      --bg: #060608;
+      --surface: #0e0e14;
+      --border: rgba(255,255,255,0.07);
+      --text: #e8e8f0;
+      --muted: #5a5a7a;
+      --accent: #7c6aff;
+      --accent2: #ff6a8a;
+      --accent3: #6affd4;
+      --node-seeded: #2a2a4a;
+      --node-real: #7c6aff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* Header */
+    #header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      background: linear-gradient(to bottom, rgba(6,6,8,0.9) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    #header h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    #header h1 span { color: var(--accent); }
+
+    #status {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Side panel */
+    #panel {
+      position: fixed;
+      right: 0; top: 0; bottom: 0;
+      width: 300px;
+      background: rgba(14,14,20,0.92);
+      border-left: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      z-index: 10;
+      padding: 72px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #panel.open { transform: translateX(0); }
+
+    #panel-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 28px; height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    #panel-close:hover { color: var(--text); border-color: var(--accent); }
+
+    #panel-username {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--text);
+    }
+
+    #panel-username a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    #panel-username a:hover { color: var(--accent); }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .tag.lang { border-color: rgba(124,106,255,0.3); color: var(--accent); }
+    .tag.topic { border-color: rgba(106,255,212,0.2); color: var(--accent3); }
+
+    .section-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    #matches-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .match-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .match-card:hover {
+      border-color: rgba(124,106,255,0.4);
+      background: rgba(124,106,255,0.05);
+    }
+
+    .match-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .match-sim {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .sim-bar {
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .sim-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      border-radius: 2px;
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Bottom left controls */
+    #controls {
+      position: fixed;
+      bottom: 24px;
+      left: 28px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    #connect-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      margin-top: 4px;
+      pointer-events: all;
+    }
+    #connect-btn:hover { background: #9a8aff; transform: translateY(-1px); }
+
+    /* Loading */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      gap: 16px;
+      transition: opacity 0.5s;
+    }
+
+    #loading h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.8rem;
+      letter-spacing: -0.03em;
+    }
+    #loading h2 span { color: var(--accent); }
+
+    #loading p {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #tooltip {
+      position: fixed;
+      padding: 6px 12px;
+      background: rgba(14,14,20,0.95);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <h2>Vibe<span>Finder</span></h2>
+  <div class="spinner"></div>
+  <p>mapping the space...</p>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="header">
+  <h1>Vibe<span>Finder</span></h1>
+  <div id="status">— users</div>
+</div>
+
+<div id="panel">
+  <button id="panel-close">✕</button>
+  <div id="panel-username"></div>
+  <div id="panel-langs"></div>
+  <div id="panel-topics"></div>
+  <div>
+    <div class="section-label">Similar developers</div>
+    <div id="matches-list"></div>
+  </div>
+</div>
+
+<div id="controls">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#7c6aff;"></div>
+    real user (oauth)
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#2a2a5a; border: 1px solid #3a3a6a;"></div>
+    seeded developer
+  </div>
+  <a id="connect-btn" href="http://localhost:8000/auth/login">
+    + Connect GitHub
+  </a>
+</div>
+
+<div id="canvas-container"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const API = 'http://localhost:8000';
+const loading = document.getElementById('loading');
+const panel = document.getElementById('panel');
+const tooltip = document.getElementById('tooltip');
+const statusEl = document.getElementById('status');
+
+// ─── Scene setup ───────────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x060608, 0.18);
+
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.01, 100);
+camera.position.set(0, 0, 4);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x060608, 1);
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 0.5;
+controls.maxDistance = 12;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.4;
+
+// Ambient + point lights
+scene.add(new THREE.AmbientLight(0x1a1a2e, 3));
+const pLight = new THREE.PointLight(0x7c6aff, 4, 8);
+pLight.position.set(0, 2, 2);
+scene.add(pLight);
+const pLight2 = new THREE.PointLight(0xff6a8a, 2, 6);
+pLight2.position.set(-2, -1, -1);
+scene.add(pLight2);
+
+// Starfield background
+const starGeo = new THREE.BufferGeometry();
+const starCount = 1200;
+const starPositions = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount * 3; i++) starPositions[i] = (Math.random() - 0.5) * 40;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+const starMat = new THREE.PointsMaterial({ color: 0x333355, size: 0.025 });
+scene.add(new THREE.Points(starGeo, starMat));
+
+// ─── Data & nodes ──────────────────────────────────────────────
+let points = [];
+let nodeMeshes = [];
+let selectedUsername = null;
+
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 0.05;
+const mouse = new THREE.Vector2();
+
+async function loadData() {
+  const res = await fetch(`${API}/umap`);
+  const data = await res.json();
+  points = data.points;
+  statusEl.textContent = `${points.length} users`;
+  buildScene(points);
+  loading.style.opacity = '0';
+  setTimeout(() => loading.style.display = 'none', 500);
+}
+
+function nodeColor(p) {
+  if (!p.seeded) return new THREE.Color(0x7c6aff); // real user — violet
+  const lang = (p.top_languages[0] || '').toLowerCase();
+  if (['python', 'jupyter notebook'].includes(lang)) return new THREE.Color(0x6affd4);
+  if (['javascript', 'typescript'].includes(lang)) return new THREE.Color(0xffd46a);
+  if (['c', 'c++', 'rust', 'go'].includes(lang)) return new THREE.Color(0xff6a8a);
+  return new THREE.Color(0x3a3a6a);
+}
+
+function buildScene(pts) {
+  // Remove old nodes
+  nodeMeshes.forEach(m => scene.remove(m));
+  nodeMeshes = [];
+
+  pts.forEach((p, i) => {
+    const isReal = !p.seeded;
+    const geo = new THREE.SphereGeometry(isReal ? 0.045 : 0.028, 12, 12);
+    const color = nodeColor(p);
+    const mat = new THREE.MeshStandardMaterial({
+      color,
+      emissive: color,
+      emissiveIntensity: isReal ? 0.8 : 0.15,
+      roughness: 0.3,
+      metalness: 0.6,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(p.x * 2.5, p.y * 2.5, p.z * 2.5);
+    mesh.userData = { index: i, point: p };
+    scene.add(mesh);
+    nodeMeshes.push(mesh);
+  });
+}
+
+// ─── Interaction ───────────────────────────────────────────────
+renderer.domElement.addEventListener('mousemove', e => {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(nodeMeshes);
+
+  if (hits.length > 0) {
+    const p = hits[0].object.userData.point;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+    tooltip.textContent = p.username;
+    document.body.style.cursor = 'pointer';
+  } else {
+    tooltip.style.display = 'none';
+    document.body.style.cursor = 'default';
+  }
+});
+
+renderer.domElement.addEventListener('click', async e => {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(nodeMeshes);
+  if (hits.length === 0) return;
+
+  const p = hits[0].object.userData.point;
+  selectedUsername = p.username;
+  controls.autoRotate = false;
+  openPanel(p);
+});
+
+async function openPanel(p) {
+  // Header
+  document.getElementById('panel-username').innerHTML =
+    `<a href="https://github.com/${p.username}" target="_blank">@${p.username}</a>`;
+
+  // Languages
+  const langsEl = document.getElementById('panel-langs');
+  langsEl.innerHTML = `<div class="section-label">Languages</div><div class="tag-row">${
+    p.top_languages.map(l => `<span class="tag lang">${l}</span>`).join('')
+  }</div>`;
+
+  // Topics
+  const topicsEl = document.getElementById('panel-topics');
+  topicsEl.innerHTML = `<div class="section-label">Interests</div><div class="tag-row">${
+    p.top_topics.map(t => `<span class="tag topic">${t}</span>`).join('')
+  }</div>`;
+
+  // Matches
+  const matchesEl = document.getElementById('matches-list');
+  matchesEl.innerHTML = `<div style="color:var(--muted);font-size:0.65rem">loading...</div>`;
+  panel.classList.add('open');
+
+  try {
+    const res = await fetch(`${API}/matches/${p.username}?top_k=5`);
+    const data = await res.json();
+    matchesEl.innerHTML = data.matches.map(m => `
+      <div class="match-card" onclick="focusUser('${m.username}')">
+        <div class="match-name">@${m.username}</div>
+        <div class="match-sim">${(m.similarity * 100).toFixed(1)}% similar</div>
+        <div class="sim-bar"><div class="sim-bar-fill" style="width:${m.similarity * 100}%"></div></div>
+        <div class="tag-row">${m.top_languages.slice(0,3).map(l => `<span class="tag lang">${l}</span>`).join('')}</div>
+      </div>
+    `).join('');
+  } catch {
+    matchesEl.innerHTML = `<div style="color:var(--muted);font-size:0.65rem">could not load matches</div>`;
+  }
+}
+
+window.focusUser = (username) => {
+  const mesh = nodeMeshes.find(m => m.userData.point.username === username);
+  if (!mesh) return;
+  const pos = mesh.position.clone();
+  const target = pos.clone().normalize().multiplyScalar(pos.length() + 1.5);
+  camera.position.lerp(target, 0.6);
+  controls.target.lerp(pos, 0.6);
+  openPanel(mesh.userData.point);
+};
+
+// Close panel
+document.getElementById('panel-close').addEventListener('click', () => {
+  panel.classList.remove('open');
+  controls.autoRotate = true;
+});
+
+// ─── Pulse animation for real users ───────────────────────────
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.016;
+  controls.update();
+
+  // Gently pulse real user nodes
+  nodeMeshes.forEach(m => {
+    if (!m.userData.point.seeded) {
+      const pulse = 1 + 0.12 * Math.sin(t * 2 + m.userData.index);
+      m.scale.setScalar(pulse);
+      m.material.emissiveIntensity = 0.6 + 0.4 * Math.sin(t * 2 + m.userData.index);
+    }
+  });
+
+  // Slowly orbit the accent light
+  pLight.position.x = Math.sin(t * 0.3) * 3;
+  pLight.position.z = Math.cos(t * 0.3) * 3;
+
+  renderer.render(scene, camera);
+}
+
+// ─── Resize ────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+loadData();
+animate();
+</script>
+</body>
+</html> 

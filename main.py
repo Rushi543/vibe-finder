@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from embedder import embed_github_data
 from qdrant_store import store_user_vector, find_similar_users
+from umap_compute import compute_umap_3d
 
 load_dotenv()
 
@@ -145,3 +146,14 @@ def get_matches(username: str, top_k: int = 5):
 def list_users():
     from qdrant_store import list_all_users
     return {"users": list_all_users()}
+
+@app.get("/umap")
+def get_umap():
+    """
+    Returns 3D UMAP coordinates for all users in Qdrant.
+    Each entry: { username, x, y, z, top_languages, top_topics, seeded }
+    """
+    points = compute_umap_3d()
+    if not points:
+        raise HTTPException(status_code=400, detail="Not enough users to compute UMAP (need at least 2)")
+    return {"count": len(points), "points": points}
