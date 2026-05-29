@@ -20,12 +20,12 @@ def compute_umap_3d() -> list[dict]:
     if len(results) < 2:
         return []
 
-    usernames = []
+    user_ids = []
     vectors = []
     payloads = []
 
     for r in results:
-        usernames.append(r.payload["username"])
+        user_ids.append(r.payload.get("user_id") or r.payload.get("username"))
         vectors.append(r.vector)
         payloads.append(r.payload)
 
@@ -51,16 +51,20 @@ def compute_umap_3d() -> list[dict]:
             coords_3d[:, i] = 2 * (col - col.min()) / col_range - 1
 
     output = []
-    for i, username in enumerate(usernames):
+    for i, user_id in enumerate(user_ids):
         output.append({
-            "username": username,
+            "user_id": payloads[i].get("user_id") or payloads[i].get("username") or user_id,
+            "label": payloads[i].get("label") or payloads[i].get("username") or user_id,
+            "github_username": payloads[i].get("github_username"),
             "x": round(float(coords_3d[i, 0]), 4),
             "y": round(float(coords_3d[i, 1]), 4),
             "z": round(float(coords_3d[i, 2]), 4),
+            "sources": payloads[i].get("sources", list(payloads[i].get("source_vectors", {}).keys())),
             "top_languages": payloads[i].get("top_languages", []),
             "top_topics": payloads[i].get("top_topics", []),
+            "top_games": payloads[i].get("top_games", []),
+            "top_genres": payloads[i].get("top_genres", []),
             "seeded": payloads[i].get("seeded", False),
-            "source": payloads[i].get("source", "github"),
         })
 
     return output

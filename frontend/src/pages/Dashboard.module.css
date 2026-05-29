@@ -1,0 +1,269 @@
+.root {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 28px;
+}
+
+.glowA,
+.glowB {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.65;
+}
+
+.glowA {
+  width: 360px;
+  height: 360px;
+  background: rgba(124, 106, 255, 0.15);
+  top: -80px;
+  left: -60px;
+}
+
+.glowB {
+  width: 320px;
+  height: 320px;
+  background: rgba(106, 255, 212, 0.12);
+  right: -60px;
+  bottom: 0;
+}
+
+.header,
+.main {
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.headerCopy {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 34rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userEmail {
+  color: var(--muted);
+  text-align: right;
+}
+
+.signOut {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.main {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.intro {
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+
+.kicker {
+  color: var(--accent-2);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+}
+
+.heading {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.4rem, 6vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  margin: 14px 0 12px;
+}
+
+.sub {
+  color: var(--muted);
+  max-width: 36rem;
+  line-height: 1.7;
+}
+
+.identityCard,
+.successBanner {
+  width: fit-content;
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(12, 15, 24, 0.78);
+  padding: 14px 16px;
+}
+
+.identityLabel {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.identityValue {
+  color: var(--text);
+  word-break: break-all;
+}
+
+.successBanner {
+  color: var(--accent-2);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 24px;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(12, 15, 23, 0.86), rgba(9, 12, 18, 0.96));
+  box-shadow: var(--shadow);
+}
+
+.connected {
+  border-color: rgba(106, 255, 212, 0.3);
+}
+
+.cardHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.sourceIcon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--c) 14%, rgba(255, 255, 255, 0.04));
+  color: var(--c);
+}
+
+.sourceName {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+.sourceDesc {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.connectedBadge {
+  border-radius: 999px;
+  background: rgba(106, 255, 212, 0.14);
+  color: var(--accent-2);
+  padding: 8px 12px;
+  font-size: 0.76rem;
+}
+
+.connectBtn {
+  width: 100%;
+  border: none;
+  border-radius: 18px;
+  padding: 14px 18px;
+  background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 55%, white));
+  color: #091018;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.steamForm {
+  display: grid;
+  gap: 12px;
+}
+
+.input {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 14px 16px;
+}
+
+.error,
+.success,
+.loadingText,
+.connectHint {
+  color: var(--muted);
+  margin-top: 12px;
+}
+
+.error {
+  color: #ff9aa9;
+}
+
+.success {
+  color: var(--accent-2);
+}
+
+.enterSection {
+  margin-top: 28px;
+}
+
+.exploreBtn {
+  border: none;
+  border-radius: 999px;
+  padding: 16px 24px;
+  background: var(--text);
+  color: #0b1020;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .root {
+    padding: 18px;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

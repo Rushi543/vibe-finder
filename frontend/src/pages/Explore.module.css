@@ -1,0 +1,395 @@
+.root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: block;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(124, 106, 255, 0.16), transparent 26%),
+    radial-gradient(circle at 78% 24%, rgba(106, 255, 212, 0.12), transparent 24%);
+  pointer-events: none;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 28px;
+  background: linear-gradient(180deg, rgba(6, 7, 11, 0.9), transparent);
+}
+
+.back,
+.toggle,
+.findMe,
+.panelClose,
+.panelClear,
+.graphStatusButton {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(12, 15, 24, 0.82);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.back {
+  padding: 10px 16px;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  gap: 12px;
+}
+
+.loader p {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top-color: var(--accent);
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 3;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(10, 12, 18, 0.92);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+  font-size: 0.78rem;
+}
+
+.tooltipSources {
+  color: var(--muted);
+}
+
+.legend {
+  position: absolute;
+  bottom: 24px;
+  left: 28px;
+  z-index: 2;
+  display: grid;
+  gap: 10px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: var(--accent-2);
+}
+
+.toggle strong {
+  color: var(--accent-2);
+  font-size: 0.72rem;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  background: rgba(12, 15, 24, 0.78);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  width: fit-content;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  width: min(360px, 100vw);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 78px 22px 22px;
+  background: rgba(11, 14, 21, 0.92);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+  overflow-y: auto;
+}
+
+.open {
+  transform: translateX(0);
+}
+
+.panelClose {
+  position: static;
+  padding: 10px 14px;
+}
+
+.panelClear,
+.graphStatusButton {
+  padding: 10px 14px;
+}
+
+.panelActions {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  gap: 10px;
+}
+
+.panelUsername {
+  display: inline-block;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.userMeta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  word-break: break-all;
+}
+
+.tagSection,
+.sliders,
+.matchesSection {
+  margin-top: 22px;
+}
+
+.tagLabel,
+.sliderLabel {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+  margin-bottom: 10px;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tag {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  font-size: 0.72rem;
+}
+
+.tagLang {
+  color: #d7d0ff;
+  border-color: rgba(124, 106, 255, 0.3);
+}
+
+.tagTopic {
+  color: #ffd7a4;
+  border-color: rgba(248, 184, 78, 0.3);
+}
+
+.tagGame {
+  color: #d3fff2;
+  border-color: rgba(106, 255, 212, 0.28);
+}
+
+.tagGenre {
+  color: #c9daff;
+  border-color: rgba(158, 194, 255, 0.22);
+}
+
+.sliderHint,
+.matchLoading,
+.emptyState {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.emptyState {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  line-height: 1.5;
+}
+
+.sliderRow {
+  display: grid;
+  grid-template-columns: 64px 1fr 48px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.slider {
+  width: 100%;
+}
+
+.sliderValue {
+  text-align: right;
+  color: var(--muted);
+}
+
+.matchList {
+  display: grid;
+  gap: 12px;
+}
+
+.matchCard {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.matchName {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.matchSim {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.simBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.simFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+.findMe {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2;
+  padding: 12px 18px;
+}
+
+.graphStatus {
+  position: absolute;
+  right: 24px;
+  bottom: 78px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(520px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border: 1px solid rgba(244, 211, 94, 0.22);
+  border-radius: 18px;
+  background: rgba(11, 14, 21, 0.92);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 14px 48px rgba(0, 0, 0, 0.24);
+}
+
+.graphStatus span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .header {
+    padding: 18px;
+    flex-wrap: wrap;
+  }
+
+  .legend {
+    left: 18px;
+    bottom: 18px;
+  }
+
+  .findMe {
+    right: 18px;
+    bottom: 18px;
+  }
+
+  .graphStatus {
+    left: 18px;
+    right: 18px;
+    bottom: 72px;
+    flex-wrap: wrap;
+  }
+}

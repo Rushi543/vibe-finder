@@ -79,10 +79,12 @@ async def seed():
 
             vector, metadata = embed_github_data(data)
             store_user_vector(
-                username=username,
+                user_id=username,
                 source_vectors={"github": vector},
                 metadata=metadata,
                 seeded=True,
+                label=username,
+                github_username=username,
             )
             print(f"  ✓ langs: {metadata['github']['top_languages'][:3]}")
             success += 1
