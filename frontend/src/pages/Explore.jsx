@@ -402,6 +402,36 @@ export default function Explore() {
                             ))}
                           </div>
                         )}
+                        {(match.top_games || []).length > 0 && (
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaBadge}>GAME</span>
+                            {(match.top_games || []).slice(0, 3).join(', ')}
+                          </div>
+                        )}
+                        {(match.top_anime || []).length > 0 && (
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaBadge}>ANIME</span>
+                            {(match.top_anime || []).slice(0, 2).join(', ')}
+                          </div>
+                        )}
+                        {(match.top_fav_manga || []).length > 0 && (
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaBadge}>MANGA</span>
+                            {(match.top_fav_manga || []).slice(0, 2).join(', ')}
+                          </div>
+                        )}
+                        {(match.top_favorites || []).length > 0 && (
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaBadge}>FAVS</span>
+                            {(match.top_favorites || []).slice(0, 3).join(', ')}
+                          </div>
+                        )}
+                        {(match.top_genres || []).length > 0 && (
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaBadge}>GENRE</span>
+                            {(match.top_genres || []).slice(0, 3).join(', ')}
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
