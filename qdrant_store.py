@@ -207,10 +207,8 @@ def find_similar_users(user_id: str, top_k: int = 5):
     ensure_collection()
     point_id = get_point_id(user_id)
     results = client.retrieve(
-            "top_games": payload.get("top_games", []),
-            "top_anime": payload.get("top_anime", []),
-            "top_favorites": payload.get("top_favorites", []),
-            "top_genres": payload.get("top_genres", []),
+        collection_name=COLLECTION_NAME,
+        ids=[point_id],
         with_vectors=True,
     )
     if not results:
