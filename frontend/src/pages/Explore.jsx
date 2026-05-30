@@ -397,39 +397,26 @@ export default function Explore() {
                         </div>
                         {(match.top_languages || []).length > 0 && (
                           <div className={styles.tagRow}>
+                            <span className={`${styles.tag} ${styles.tagRowLabel}`}>LANG</span>
                             {match.top_languages.slice(0, 3).map((language) => (
                               <span key={language} className={`${styles.tag} ${styles.tagLang}`}>{language}</span>
                             ))}
                           </div>
                         )}
+                        {((match.top_favorites && match.top_favorites.length) || (match.top_anime || []).length > 0) && (
+                          <div className={styles.tagRow}>
+                            <span className={`${styles.tag} ${styles.tagRowLabel}`}>ANIME</span>
+                            {(match.top_favorites?.length ? match.top_favorites : match.top_anime || []).slice(0, 3).map((anime) => (
+                              <span key={anime} className={`${styles.tag} ${styles.tagAnime}`}>{anime}</span>
+                            ))}
+                          </div>
+                        )}
                         {(match.top_games || []).length > 0 && (
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaBadge}>GAME</span>
-                            {(match.top_games || []).slice(0, 3).join(', ')}
-                          </div>
-                        )}
-                        {(match.top_anime || []).length > 0 && (
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaBadge}>ANIME</span>
-                            {(match.top_anime || []).slice(0, 2).join(', ')}
-                          </div>
-                        )}
-                        {(match.top_fav_manga || []).length > 0 && (
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaBadge}>MANGA</span>
-                            {(match.top_fav_manga || []).slice(0, 2).join(', ')}
-                          </div>
-                        )}
-                        {(match.top_favorites || []).length > 0 && (
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaBadge}>FAVS</span>
-                            {(match.top_favorites || []).slice(0, 3).join(', ')}
-                          </div>
-                        )}
-                        {(match.top_genres || []).length > 0 && (
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaBadge}>GENRE</span>
-                            {(match.top_genres || []).slice(0, 3).join(', ')}
+                          <div className={styles.tagRow}>
+                            <span className={`${styles.tag} ${styles.tagRowLabel}`}>GAME</span>
+                            {match.top_games.slice(0, 3).map((game) => (
+                              <span key={game} className={`${styles.tag} ${styles.tagGame}`}>{game}</span>
+                            ))}
                           </div>
                         )}
                       </button>
