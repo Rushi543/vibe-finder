@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../App'
-import { buildGithubConnectUrl, connectSteam, getUser } from '../lib/api'
+import { buildGithubConnectUrl, connectSteam, connectAnilist, getUser } from '../lib/api'
 import { supabase } from '../lib/supabase'
 import styles from './Dashboard.module.css'
 
@@ -17,10 +17,15 @@ export default function Dashboard() {
 
   const [connectedSources, setConnectedSources] = useState([])
   const [githubMeta, setGithubMeta] = useState({ top_languages: [], top_topics: [] })
+  const [anilistMeta, setAnilistMeta] = useState({ top_anime: [], top_genres: [] })
   const [steamInput, setSteamInput] = useState('')
   const [steamLoading, setSteamLoading] = useState(false)
   const [steamError, setSteamError] = useState('')
   const [steamSuccess, setSteamSuccess] = useState('')
+  const [anilistInput, setAnilistInput] = useState('')
+  const [anilistLoading, setAnilistLoading] = useState(false)
+  const [anilistError, setAnilistError] = useState('')
+  const [anilistSuccess, setAnilistSuccess] = useState('')
   const [loadingUser, setLoadingUser] = useState(true)
   const [githubSuccess, setGithubSuccess] = useState(false)
 
@@ -53,6 +58,10 @@ export default function Dashboard() {
         top_languages: user.top_languages || [],
         top_topics: user.top_topics || [],
       })
+      setAnilistMeta({
+        top_anime: user.top_anime || [],
+        top_genres: user.top_genres || [],
+      })
       // If steam metadata exists, show a summary message
       if (user.top_games && user.top_games.length) {
         setSteamSuccess(`Top picks: ${user.top_games.slice(0, 3).join(', ')}`)
@@ -66,6 +75,25 @@ export default function Dashboard() {
 
   function handleGithubConnect() {
     window.location.href = buildGithubConnectUrl(userId, displayName)
+  }
+
+  async function handleAnilistConnect() {
+    if (!anilistInput.trim()) return
+
+    setAnilistLoading(true)
+    setAnilistError('')
+    setAnilistSuccess('')
+
+    try {
+      const result = await connectAnilist(userId, anilistInput.trim(), displayName)
+      setAnilistSuccess(`Connected ${result.anime_count} anime. Top picks: ${(result.top_anime || []).slice(0, 3).join(', ')}`)
+      setConnectedSources((current) => [...new Set([...current, 'anilist'])])
+      setAnilistInput('')
+    } catch (error) {
+      setAnilistError(error.message || 'Failed to connect AniList')
+    } finally {
+      setAnilistLoading(false)
+    }
   }
 
   async function handleSteamConnect() {
@@ -185,6 +213,48 @@ export default function Dashboard() {
 
             {steamError && <div className={styles.error}>{steamError}</div>}
             {steamSuccess && <div className={styles.success}>{steamSuccess}</div>}
+          </article>
+
+          <article className={`${styles.card} ${isConnected('anilist') ? styles.connected : ''}`}>
+            <div className={styles.cardHeader}>
+              <div className={styles.sourceIcon} style={{ '--c': '#f47fff' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z" />
+                </svg>
+              </div>
+              <div>
+                <div className={styles.sourceName}>AniList</div>
+                <div className={styles.sourceDesc}>Anime, manga, genres, studios</div>
+              </div>
+              {isConnected('anilist') && <span className={styles.connectedBadge}>Connected</span>}
+            </div>
+
+            <div className={styles.steamForm}>
+              <input
+                className={styles.input}
+                placeholder="AniList username"
+                value={anilistInput}
+                onChange={(event) => setAnilistInput(event.target.value)}
+                onKeyDown={(event) => event.key === 'Enter' && handleAnilistConnect()}
+              />
+              <button
+                className={styles.connectBtn}
+                style={{ '--c': '#f47fff' }}
+                onClick={handleAnilistConnect}
+                disabled={anilistLoading || !anilistInput.trim()}
+              >
+                {anilistLoading ? 'Fetching...' : isConnected('anilist') ? 'Update AniList' : 'Connect AniList'}
+              </button>
+            </div>
+
+            {anilistError && <div className={styles.error}>{anilistError}</div>}
+            {anilistSuccess && <div className={styles.success}>{anilistSuccess}</div>}
+            {isConnected('anilist') && !anilistSuccess && (
+              <div className={styles.sourceMeta}>
+                <div><strong>Top anime:</strong> {(anilistMeta.top_anime || []).slice(0,2).join(', ') || '—'}</div>
+                <div><strong>Top genres:</strong> {(anilistMeta.top_genres || []).slice(0,3).join(', ') || '—'}</div>
+              </div>
+            )}
           </article>
         </section>
 

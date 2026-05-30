@@ -19,6 +19,19 @@ export function buildGithubConnectUrl(userId, label) {
   return `${API_URL}/auth/github/start?${params.toString()}`
 }
 
+export async function connectAnilist(userId, anilistUsername, label) {
+  const response = await fetch(`${API_URL}/anilist/connect`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: userId,
+      anilist_username: anilistUsername,
+      label,
+    }),
+  })
+  return readJson(response)
+}
+
 export async function getUser(userId) {
   const response = await fetch(`${API_URL}/users/${encodeURIComponent(userId)}`)
   return readJson(response)

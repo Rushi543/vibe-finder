@@ -10,6 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel
 
+# Load .env first, then override with .env.local if it exists
+load_dotenv('.env')
+if os.path.exists('.env.local'):
+    load_dotenv('.env.local', override=True)
+
 from embedder import embed_github_data
 from qdrant_store import (
     find_similar_users,
@@ -21,6 +26,8 @@ from qdrant_store import (
 from spotify_embedder import embed_spotify_data
 from steam_embedder import embed_steam_data
 from steam_fetcher import fetch_steam_data
+from anilist_fetcher import fetch_anilist_data
+from anilist_embedder import embed_anilist_data
 from umap_compute import compute_umap_3d
 
 load_dotenv()
@@ -277,6 +284,40 @@ async def process_spotify_user(access_token: str):
         "source": "spotify",
         "top_artists": spotify_meta.get("top_artists", []),
         "top_genres": spotify_meta.get("top_genres", []),
+    }
+
+
+class AnilistConnectRequest(BaseModel):
+    user_id: str
+    anilist_username: str
+    label: str | None = None
+
+
+@app.post("/anilist/connect")
+async def connect_anilist(req: AnilistConnectRequest):
+    anilist_data = await fetch_anilist_data(req.anilist_username)
+
+    if anilist_data is None:
+        raise HTTPException(400, "Could not fetch AniList data. Check the username and profile visibility.")
+
+    vector, metadata = embed_anilist_data(anilist_data)
+    store_user_vector(
+        user_id=req.user_id,
+        source_vectors={"anilist": vector},
+        metadata=metadata,
+        seeded=False,
+        label=req.label or req.user_id,
+    )
+
+    anilist_meta = metadata["anilist"]
+    return {
+        "status": "success",
+        "user_id": req.user_id,
+        "label": req.label or req.user_id,
+        "source": "anilist",
+        "anime_count": anilist_meta.get("anime_count", 0),
+        "top_anime": anilist_meta.get("top_anime", []),
+        "top_genres": anilist_meta.get("top_genres", []),
     }
 
 
