@@ -25,6 +25,11 @@ async def resolve_steam_id(identifier: str, client: httpx.AsyncClient) -> str | 
         parts = identifier.rstrip("/").split("/")
         identifier = parts[-1]
 
+    # If the extracted part is a numeric Steam64 ID, return it directly
+    identifier = identifier.strip()
+    if identifier.isdigit() and len(identifier) >= 15:
+        return identifier
+
     # Resolve vanity name
     res = await client.get(
         f"{STEAM_API}/ISteamUser/ResolveVanityURL/v1/",
