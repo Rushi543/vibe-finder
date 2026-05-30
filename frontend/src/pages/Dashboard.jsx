@@ -16,6 +16,7 @@ export default function Dashboard() {
     'Anonymous explorer'
 
   const [connectedSources, setConnectedSources] = useState([])
+  const [githubMeta, setGithubMeta] = useState({ top_languages: [], top_topics: [] })
   const [steamInput, setSteamInput] = useState('')
   const [steamLoading, setSteamLoading] = useState(false)
   const [steamError, setSteamError] = useState('')
@@ -28,6 +29,7 @@ export default function Dashboard() {
     if (params.get('github') === 'success') {
       setGithubSuccess(true)
       window.history.replaceState({}, '', '/dashboard')
+      if (userId) loadUserData()
     }
   }, [])
 
@@ -36,11 +38,25 @@ export default function Dashboard() {
     loadUserData()
   }, [userId])
 
+  useEffect(() => {
+    if (githubSuccess && userId) {
+      loadUserData()
+    }
+  }, [githubSuccess, userId])
+
   async function loadUserData() {
     setLoadingUser(true)
     try {
       const user = await getUser(userId)
       setConnectedSources(user.sources || [])
+      setGithubMeta({
+        top_languages: user.top_languages || [],
+        top_topics: user.top_topics || [],
+      })
+      // If steam metadata exists, show a summary message
+      if (user.top_games && user.top_games.length) {
+        setSteamSuccess(`Top picks: ${user.top_games.slice(0, 3).join(', ')}`)
+      }
     } catch (error) {
       setConnectedSources([])
     } finally {
@@ -122,9 +138,17 @@ export default function Dashboard() {
               </div>
               {isConnected('github') && <span className={styles.connectedBadge}>Connected</span>}
             </div>
-            <button className={styles.connectBtn} style={{ '--c': '#7c6aff' }} onClick={handleGithubConnect}>
-              {isConnected('github') ? 'Reconnect GitHub' : 'Connect GitHub'}
-            </button>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                <button className={styles.connectBtn} style={{ '--c': '#7c6aff' }} onClick={handleGithubConnect}>
+                  {isConnected('github') ? 'Reconnect GitHub' : 'Connect GitHub'}
+                </button>
+                {isConnected('github') && (
+                  <div className={styles.sourceMeta}>
+                    <div><strong>Top languages:</strong> {(githubMeta.top_languages || []).slice(0,3).join(', ') || '—'}</div>
+                    <div><strong>Top topics:</strong> {(githubMeta.top_topics || []).slice(0,3).join(', ') || '—'}</div>
+                  </div>
+                )}
+              </div>
           </article>
 
           <article className={`${styles.card} ${isConnected('steam') ? styles.connected : ''}`}>
