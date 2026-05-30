@@ -17,7 +17,7 @@ export default function Dashboard() {
 
   const [connectedSources, setConnectedSources] = useState([])
   const [githubMeta, setGithubMeta] = useState({ top_languages: [], top_topics: [] })
-  const [anilistMeta, setAnilistMeta] = useState({ top_anime: [], top_genres: [] })
+  const [anilistMeta, setAnilistMeta] = useState({ top_anime: [], top_genres: [], top_favorites: [], top_fav_manga: [] })
   const [steamInput, setSteamInput] = useState('')
   const [steamLoading, setSteamLoading] = useState(false)
   const [steamError, setSteamError] = useState('')
@@ -62,6 +62,7 @@ export default function Dashboard() {
         top_anime: user.top_anime || [],
         top_genres: user.top_genres || [],
         top_favorites: user.top_favorites || [],
+        top_fav_manga: user.top_fav_manga || [],
       })
       // If steam metadata exists, show a summary message
       if (user.top_games && user.top_games.length) {
@@ -254,6 +255,7 @@ export default function Dashboard() {
               <div className={styles.sourceMeta}>
                 <div><strong>Top anime:</strong> {(anilistMeta.top_anime || []).slice(0,2).join(', ') || '—'}</div>
                 <div><strong>Favorites:</strong> {(anilistMeta.top_favorites || []).slice(0,3).join(', ') || '—'}</div>
+                <div><strong>Favorite manga:</strong> {(anilistMeta.top_fav_manga || []).slice(0,3).join(', ') || '—'}</div>
                 <div><strong>Top genres:</strong> {(anilistMeta.top_genres || []).slice(0,3).join(', ') || '—'}</div>
               </div>
             )}

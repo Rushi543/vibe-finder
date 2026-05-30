@@ -97,6 +97,9 @@ def _normalize_payload(payload: dict) -> dict:
         "top_languages": payload.get("top_languages", []),
         "top_topics": payload.get("top_topics", []),
         "top_games": payload.get("top_games", []),
+        "top_anime": payload.get("top_anime", []),
+        "top_favorites": payload.get("top_favorites", []),
+        "top_fav_manga": payload.get("top_fav_manga", []),
         "top_genres": payload.get("top_genres", []),
     }
 
@@ -171,6 +174,7 @@ def store_user_vector(
                     "top_games": steam_meta.get("top_games", []),
                     "top_anime": anilist_meta.get("top_anime", []),
                     "top_favorites": anilist_meta.get("top_favorites", []),
+                    "top_fav_manga": anilist_meta.get("top_fav_manga", []),
                     "top_genres": _merge_list_values(
                         steam_meta.get("top_genres", []),
                         spotify_meta.get("top_genres", []),
