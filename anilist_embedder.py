@@ -11,6 +11,7 @@ def embed_anilist_data(anilist_data: dict) -> tuple[list, dict]:
     completed_anime = anilist_data.get("completed_anime", [])
     all_genres = anilist_data.get("all_genres", [])
     studios = anilist_data.get("studios", [])
+    top_favorites = anilist_data.get("top_favorites", [])
 
     # Build text representation
     text_parts = []
@@ -23,6 +24,9 @@ def embed_anilist_data(anilist_data: dict) -> tuple[list, dict]:
 
     if studios:
         text_parts.append(f"Favorite studios: {', '.join(studios[:3])}")
+
+    if top_favorites:
+        text_parts.append(f"Favorites: {', '.join(top_favorites[:5])}")
 
     anime_count = anilist_data.get("anime_count", 0)
     manga_count = anilist_data.get("manga_count", 0)
@@ -46,6 +50,7 @@ def embed_anilist_data(anilist_data: dict) -> tuple[list, dict]:
             "username": anilist_data.get("username", ""),
             "top_anime": completed_anime[:5],
             "top_genres": top_genres,
+            "top_favorites": top_favorites[:5],
             "top_studios": studios[:3],
             "anime_count": anime_count,
             "manga_count": manga_count,

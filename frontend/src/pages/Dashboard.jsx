@@ -61,6 +61,7 @@ export default function Dashboard() {
       setAnilistMeta({
         top_anime: user.top_anime || [],
         top_genres: user.top_genres || [],
+        top_favorites: user.top_favorites || [],
       })
       // If steam metadata exists, show a summary message
       if (user.top_games && user.top_games.length) {
@@ -252,6 +253,7 @@ export default function Dashboard() {
             {isConnected('anilist') && !anilistSuccess && (
               <div className={styles.sourceMeta}>
                 <div><strong>Top anime:</strong> {(anilistMeta.top_anime || []).slice(0,2).join(', ') || '—'}</div>
+                <div><strong>Favorites:</strong> {(anilistMeta.top_favorites || []).slice(0,3).join(', ') || '—'}</div>
                 <div><strong>Top genres:</strong> {(anilistMeta.top_genres || []).slice(0,3).join(', ') || '—'}</div>
               </div>
             )}

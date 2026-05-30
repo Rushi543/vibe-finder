@@ -141,6 +141,7 @@ def store_user_vector(
 
     github_meta = merged_metadata.get("github", {})
     steam_meta = merged_metadata.get("steam", {})
+    anilist_meta = merged_metadata.get("anilist", {})
     spotify_meta = merged_metadata.get("spotify", {})
     merged_seeded = seeded and existing_payload.get("seeded", seeded) if existing_payload else seeded
     merged_label = label or existing_payload.get("label") or user_id
@@ -168,9 +169,12 @@ def store_user_vector(
                     "top_languages": github_meta.get("top_languages", []),
                     "top_topics": github_meta.get("top_topics", []),
                     "top_games": steam_meta.get("top_games", []),
+                    "top_anime": anilist_meta.get("top_anime", []),
+                    "top_favorites": anilist_meta.get("top_favorites", []),
                     "top_genres": _merge_list_values(
                         steam_meta.get("top_genres", []),
                         spotify_meta.get("top_genres", []),
+                        anilist_meta.get("top_genres", []),
                     ),
                     "top_artists": spotify_meta.get("top_artists", []),
                 },
@@ -203,8 +207,10 @@ def find_similar_users(user_id: str, top_k: int = 5):
     ensure_collection()
     point_id = get_point_id(user_id)
     results = client.retrieve(
-        collection_name=COLLECTION_NAME,
-        ids=[point_id],
+            "top_games": payload.get("top_games", []),
+            "top_anime": payload.get("top_anime", []),
+            "top_favorites": payload.get("top_favorites", []),
+            "top_genres": payload.get("top_genres", []),
         with_vectors=True,
     )
     if not results:

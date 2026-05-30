@@ -11,38 +11,27 @@ async def fetch_anilist_data(username: str) -> dict | None:
     """
     async with httpx.AsyncClient() as client:
         # Fetch user ID from username
+        # First, fetch the public user profile and favourites in a single query
         user_query = """
         query {
-            User(name: "%s") {
-                id
-                name
-                avatar {
-                    large
-                }
-                about
-                statistics {
-                    anime {
-                        count
-                        meanScore
-                        standardDeviation
-                    }
-                    manga {
-                        count
-                        meanScore
-                        standardDeviation
-                    }
-                }
+          User(name: "%s") {
+            id
+            name
+            about
+            statistics {
+              anime { count meanScore }
+              manga { count meanScore }
             }
+            favourites {
+              anime { nodes { id title { romaji english } } }
+              manga { nodes { id title { romaji english } } }
+            }
+          }
         }
         """ % username
 
-        user_res = await client.post(
-            ANILIST_API,
-            json={"query": user_query},
-            timeout=10.0,
-        )
+        user_res = await client.post(ANILIST_API, json={"query": user_query}, timeout=10.0)
         user_data = user_res.json()
-
         if user_data.get("errors"):
             return None
 
@@ -55,66 +44,42 @@ async def fetch_anilist_data(username: str) -> dict | None:
         # Fetch anime list (top 50 most recent)
         anime_query = """
         query {
-            Page(page: 1, perPage: 50) {
-                mediaList(userId: %d, type: ANIME, sort: UPDATED_TIME_DESC) {
-                    media {
-                        id
-                        title {
-                            english
-                            romaji
-                        }
-                        genres
-                        studios {
-                            nodes {
-                                name
-                            }
-                        }
-                        meanScore
-                        episodes
-                    }
-                    status
-                    score
-                    progress
-                }
+          Page(page: 1, perPage: 50) {
+            mediaList(userId: %d, type: ANIME, sort: UPDATED_TIME_DESC) {
+              media {
+                id
+                title { english romaji }
+                genres
+                studios { nodes { name } }
+                meanScore
+                episodes
+              }
+              status
+              score
+              progress
             }
+          }
         }
         """ % user_id
 
-        anime_res = await client.post(
-            ANILIST_API,
-            json={"query": anime_query},
-            timeout=15.0,
-        )
+        anime_res = await client.post(ANILIST_API, json={"query": anime_query}, timeout=15.0)
         anime_data = anime_res.json()
 
         # Fetch manga list
         manga_query = """
         query {
-            Page(page: 1, perPage: 50) {
-                mediaList(userId: %d, type: MANGA, sort: UPDATED_TIME_DESC) {
-                    media {
-                        id
-                        title {
-                            english
-                            romaji
-                        }
-                        genres
-                        meanScore
-                        chapters
-                    }
-                    status
-                    score
-                    progress
-                }
+          Page(page: 1, perPage: 50) {
+            mediaList(userId: %d, type: MANGA, sort: UPDATED_TIME_DESC) {
+              media { id title { english romaji } genres meanScore chapters }
+              status
+              score
+              progress
             }
+          }
         }
         """ % user_id
 
-        manga_res = await client.post(
-            ANILIST_API,
-            json={"query": manga_query},
-            timeout=15.0,
-        )
+        manga_res = await client.post(ANILIST_API, json={"query": manga_query}, timeout=15.0)
         manga_data = manga_res.json()
 
         anime_list = anime_data.get("data", {}).get("Page", {}).get("mediaList", [])
@@ -142,7 +107,22 @@ async def fetch_anilist_data(username: str) -> dict | None:
                     if studio_name and studio_name not in all_studios:
                         all_studios.append(studio_name)
 
-        # Sort by frequency (top watched genres/studios)
+        # Favorites from the initial user query
+        favourites = user.get("favourites", {})
+        fav_anime_nodes = favourites.get("anime", {}).get("nodes", []) if favourites else []
+        fav_manga_nodes = favourites.get("manga", {}).get("nodes", []) if favourites else []
+
+        fav_anime = []
+        for n in fav_anime_nodes:
+            title = n.get("title", {}).get("english") or n.get("title", {}).get("romaji") or "Unknown"
+            fav_anime.append(title)
+
+        fav_manga = []
+        for n in fav_manga_nodes:
+            title = n.get("title", {}).get("english") or n.get("title", {}).get("romaji") or "Unknown"
+            fav_manga.append(title)
+
+        # Limit sizes
         completed_anime = completed_anime[:60]
 
         stats = user.get("statistics", {})
@@ -160,4 +140,6 @@ async def fetch_anilist_data(username: str) -> dict | None:
             "manga_count": manga_stats.get("count", 0),
             "manga_score": manga_stats.get("meanScore", 0) / 10.0,
             "about": user.get("about", ""),
+            "top_favorites": fav_anime[:10],
+            "top_fav_manga": fav_manga[:10],
         }
