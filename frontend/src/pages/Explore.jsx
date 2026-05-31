@@ -342,6 +342,17 @@ export default function Explore() {
                 </>
               )}
 
+              {((selectedUser.top_favorites && selectedUser.top_favorites.length) || (selectedUser.top_anime || []).length > 0) && (
+                <>
+                  <div className={styles.tagLabel}>ANIME</div>
+                  <div className={styles.tagRow}>
+                    {(selectedUser.top_favorites?.length ? selectedUser.top_favorites : selectedUser.top_anime || []).slice(0, 5).map((anime) => (
+                      <span key={anime} className={`${styles.tag} ${styles.tagAnime}`}>{anime}</span>
+                    ))}
+                  </div>
+                </>
+              )}
+
               {selectedUser.top_games?.length > 0 && (
                 <>
                   <div className={styles.tagLabel}>Top games</div>

@@ -249,6 +249,11 @@
   border-color: rgba(248, 184, 78, 0.3);
 }
 
+.tagAnime {
+  color: #ffb2ff;
+  border-color: rgba(255, 178, 255, 0.28);
+}
+
 .tagGame {
   color: #d3fff2;
   border-color: rgba(106, 255, 212, 0.28);
