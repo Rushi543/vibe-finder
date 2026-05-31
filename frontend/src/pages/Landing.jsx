@@ -68,14 +68,8 @@ export default function Landing() {
         <p className={styles.subtitle}>
           Map people by what they build and what they play.
           <br />
-          Connect Google first, then layer in GitHub and Steam.
+          Connect with Google to continue.
         </p>
-
-        <div className={styles.signals}>
-          <span className={styles.signal} style={{ '--signal': '#7c6aff' }}>GitHub</span>
-          <span className={styles.plus}>+</span>
-          <span className={styles.signal} style={{ '--signal': '#6affd4' }}>Steam</span>
-        </div>
 
         <button className={styles.googleButton} onClick={handleGoogleLogin} disabled={loading}>
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">

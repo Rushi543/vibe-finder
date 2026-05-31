@@ -11,7 +11,7 @@ const PROFILE_COLORS = {
   profile: '#7c6aff',
   seeded: '#55a594',
   match: '#f4d35e',
-  currentUser: '#d6181b',
+  currentUser: '#4DA3FF',
   selected: '#ff5f87',
 }
 
