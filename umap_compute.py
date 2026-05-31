@@ -64,6 +64,11 @@ def compute_umap_3d() -> list[dict]:
             "top_topics": payloads[i].get("top_topics", []),
             "top_games": payloads[i].get("top_games", []),
             "top_genres": payloads[i].get("top_genres", []),
+            # AniList fields
+            "top_anime": payloads[i].get("top_anime", []),
+            "top_favorites": payloads[i].get("top_favorites", []),
+            "top_fav_manga": payloads[i].get("top_fav_manga", []),
+            "top_studios": payloads[i].get("top_studios", []),
             "seeded": payloads[i].get("seeded", False),
         })
 
