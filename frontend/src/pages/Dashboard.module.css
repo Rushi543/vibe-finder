@@ -111,7 +111,6 @@
   line-height: 1.7;
 }
 
-.identityCard,
 .successBanner {
   width: fit-content;
   margin-top: 18px;
@@ -119,20 +118,6 @@
   border-radius: 18px;
   background: rgba(12, 15, 24, 0.78);
   padding: 14px 16px;
-}
-
-.identityLabel {
-  display: block;
-  color: var(--muted);
-  font-size: 0.72rem;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-}
-
-.identityValue {
-  color: var(--text);
-  word-break: break-all;
 }
 
 .successBanner {

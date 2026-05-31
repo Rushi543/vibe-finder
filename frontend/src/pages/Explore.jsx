@@ -398,7 +398,7 @@ export default function Explore() {
               <div className={styles.panelUsername}>{displayNameFor(selectedUser)}</div>
             )}
 
-            <div className={styles.userMeta}>{selectedUser.seeded ? 'Seeded comparison profile' : selectedUser.user_id}</div>
+            {selectedUser.seeded && <div className={styles.userMeta}>Seeded comparison profile</div>}
 
             <div className={styles.tagSection}>
               {selectedUser.top_languages?.length > 0 && (

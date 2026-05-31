@@ -147,10 +147,6 @@ export default function Dashboard() {
           <p className={styles.sub}>
             GitHub captures what you build. Steam captures what you gravitate toward.
           </p>
-          <div className={styles.identityCard}>
-            <span className={styles.identityLabel}>User ID</span>
-            <code className={styles.identityValue}>{userId}</code>
-          </div>
           {githubSuccess && <div className={`${styles.successBanner} ${styles.successPurple}`}>GitHub connected. Your graph is ready to refresh.</div>}
         </section>
 
