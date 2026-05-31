@@ -533,13 +533,6 @@ export default function Explore() {
         )}
       </aside>
 
-      {activeGraphPoint && !panelOpen && (
-        <div className={styles.graphStatus}>
-          <button className={styles.graphStatusButton} onClick={() => setPanelOpen(true)}>Open details</button>
-          <button className={styles.graphStatusButton} onClick={clearSelection}>Clear</button>
-        </div>
-      )}
-
       {myPoint && !panelOpen && (
         <button className={styles.findMe} onClick={() => handleNodeClick(myPoint)}>
           Find me in the space
