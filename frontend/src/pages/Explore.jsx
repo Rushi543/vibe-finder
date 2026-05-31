@@ -535,7 +535,6 @@ export default function Explore() {
 
       {activeGraphPoint && !panelOpen && (
         <div className={styles.graphStatus}>
-          <span>Connections pinned for {displayNameFor(activeGraphPoint)}</span>
           <button className={styles.graphStatusButton} onClick={() => setPanelOpen(true)}>Open details</button>
           <button className={styles.graphStatusButton} onClick={clearSelection}>Clear</button>
         </div>
