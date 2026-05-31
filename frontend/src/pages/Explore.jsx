@@ -405,11 +405,16 @@ export default function Explore() {
                         className={styles.matchCard}
                         onClick={() => handleNodeClick(points.find((point) => point.user_id === match.user_id) || match)}
                       >
-                        <div className={styles.matchName}>{displayNameFor(match)}</div>
+                        <div className={styles.matchNameRow}>
+                          <div className={styles.matchName}>{displayNameFor(match)}</div>
+                          {match.explanation && (
+                            <div className={styles.infoTip}>
+                              <span className={styles.infoIcon}>ⓘ</span>
+                              <div className={styles.infoTooltip}>{match.explanation}</div>
+                            </div>
+                          )}
+                        </div>
                         <div className={styles.matchSim}>{(match.similarity * 100).toFixed(1)}% similarity</div>
-                        {match.explanation && (
-                          <div className={styles.matchExplanation}>{match.explanation}</div>
-                        )}
                         <div className={styles.simBar}>
                           <div className={styles.simFill} style={{ width: `${match.similarity * 100}%` }} />
                         </div>
