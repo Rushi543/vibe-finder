@@ -1,15 +1,60 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
+import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import * as THREE from 'three'
 
-function OrbitingPlanet({ point, index, totalCount, onNodeClick, onNodeHover }) {
+const SOURCE_COLORS = {
+  github: '#4DA3FF',
+  steam: '#4ADE80',
+  anilist: '#C084FC',
+  mixed: '#FFD166',
+  seeded: '#55a594',
+}
+
+function colorForPoint(point) {
+  if (point.seeded) return SOURCE_COLORS.seeded
+
+  const sources = point.sources || []
+  if (sources.length > 1) return SOURCE_COLORS.mixed
+  if (sources.includes('github')) return SOURCE_COLORS.github
+  if (sources.includes('steam')) return SOURCE_COLORS.steam
+  if (sources.includes('anilist')) return SOURCE_COLORS.anilist
+
+  return SOURCE_COLORS.github
+}
+
+const INNER_ORBIT_RADIUS = 2.4
+const MIN_ORBIT_GAP = 1.35
+const SIMILARITY_SPREAD = 8
+
+function buildOrbitLayout(points) {
+  if (points.length === 0) return []
+
+  const topSimilarity = points[0]?.similarity ?? 1
+  let previousRadius = INNER_ORBIT_RADIUS
+
+  return points.map((point, index) => {
+    if (index === 0) {
+      return { point, orbitRadius: INNER_ORBIT_RADIUS }
+    }
+
+    const similarity = point.similarity ?? 0.5
+    const similarityRadius = INNER_ORBIT_RADIUS + Math.max(0, topSimilarity - similarity) * SIMILARITY_SPREAD
+    const orbitRadius = Math.max(previousRadius + MIN_ORBIT_GAP, similarityRadius)
+    previousRadius = orbitRadius
+
+    return { point, orbitRadius }
+  })
+}
+
+function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
-  const orbitRadius = (0.9 + index * 0.85) * 1.8
   const orbitSpeed = 0.18 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
-  const color = point.seeded ? '#55a594' : '#4DA3FF'
-  const planetScale = 0.12 + Math.max(0, 0.07 * (totalCount - index))
+  const color = colorForPoint(point)
+  const similarityFactor = point.similarity ?? 0.5
+  const planetScale = 0.4 + similarityFactor * 0.8
 
   useFrame(({ clock }) => {
     if (!orbitRef.current) return
@@ -43,41 +88,45 @@ function OrbitingPlanet({ point, index, totalCount, onNodeClick, onNodeHover }) 
 
 function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
   const sortedMatches = [...matchPoints].sort((a, b) => b.similarity - a.similarity)
+  const orbitLayout = buildOrbitLayout(sortedMatches)
 
   return (
     <>
       <ambientLight intensity={0.35} color="#1a1a2e" />
       <pointLight position={[0, 5, 0]} intensity={2.1} color="#ffd166" />
-      <Stars radius={35} depth={25} count={600} factor={2} fade />
+      <Stars radius={100} depth={50} count={5000} factor={5} saturation={0} fade />
 
       {centerPoint && (
         <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[0.24, 22, 22]} />
-          <meshStandardMaterial emissive="#ffd166" color="#ffd166" roughness={0.2} metalness={0.35} />
+          <sphereGeometry args={[0.8, 48, 48]} />
+          <meshStandardMaterial emissive="#ffd166" emissiveIntensity={3} color="#ffd166" roughness={0.2} metalness={0.35} />
         </mesh>
       )}
 
-      {sortedMatches.map((_, index) => {
-        const orbitRadius = (0.9 + index * 0.85) * 1.8
-
+      {orbitLayout.map(({ point, orbitRadius }) => {
         return (
-          <mesh key={`ring-${index}`} rotation-x={-Math.PI / 2}>
+          <mesh key={`ring-${point.user_id}`} rotation-x={-Math.PI / 2}>
             <ringGeometry args={[orbitRadius - 0.02, orbitRadius + 0.02, 64]} />
             <meshBasicMaterial color="#ffd166" transparent opacity={0.12} side={THREE.DoubleSide} />
           </mesh>
         )
       })}
 
-      {sortedMatches.map((point, index) => (
+      {orbitLayout.map(({ point, orbitRadius }, index) => (
         <OrbitingPlanet
           key={point.user_id}
           point={point}
           index={index}
           totalCount={sortedMatches.length}
+          orbitRadius={orbitRadius}
           onNodeClick={onNodeClick}
           onNodeHover={onNodeHover}
         />
       ))}
+
+      <EffectComposer>
+        <Bloom intensity={1.6} luminanceThreshold={0.08} luminanceSmoothing={0.85} mipmapBlur />
+      </EffectComposer>
     </>
   )
 }
