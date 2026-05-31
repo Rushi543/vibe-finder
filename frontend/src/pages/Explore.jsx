@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
 import * as THREE from 'three'
 import { useAuth } from '../App'
@@ -130,6 +130,24 @@ function Scene({ points, currentUserId, selectedUserId, matchUserIds, onNodeClic
   )
 }
 
+function SceneCameraController({ viewMode, controlsRef }) {
+  const { camera } = useThree()
+
+  useEffect(() => {
+    if (viewMode === 'galaxy') {
+      camera.position.set(0, 7.5, 3.2)
+    } else {
+      camera.position.set(0, 0, 6)
+    }
+
+    camera.lookAt(0, 0, 0)
+    controlsRef.current?.target.set(0, 0, 0)
+    controlsRef.current?.update()
+  }, [camera, controlsRef, viewMode])
+
+  return null
+}
+
 export default function Explore() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -150,6 +168,7 @@ export default function Explore() {
   const [viewMode, setViewMode] = useState('space')
   const [showSeeded, setShowSeeded] = useState(true)
   const debounceRef = useRef(null)
+  const controlsRef = useRef(null)
 
   useEffect(() => {
     loadPoints()
@@ -282,6 +301,7 @@ export default function Explore() {
       ) : (
         <>
           <Canvas className={styles.canvas} camera={{ position: [0, 0, 6], fov: 60 }}>
+            <SceneCameraController viewMode={viewMode} controlsRef={controlsRef} />
             {viewMode === 'space' ? (
               <Scene
                 points={visiblePoints}
@@ -300,7 +320,7 @@ export default function Explore() {
                 onNodeHover={setHoveredUser}
               />
             )}
-            <OrbitControls enableDamping dampingFactor={0.06} autoRotate={!panelOpen} autoRotateSpeed={0.35} />
+            <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.06} autoRotate={!panelOpen} autoRotateSpeed={0.35} />
           </Canvas>
           {viewMode === 'galaxy' && !(activeGraphPoint || myPoint) && (
             <div className={styles.emptyGalaxy}>Select a profile to view the galaxy system.</div>

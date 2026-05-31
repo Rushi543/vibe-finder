@@ -5,11 +5,11 @@ import * as THREE from 'three'
 
 function OrbitingPlanet({ point, index, totalCount, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
-  const orbitRadius = (0.9 + index * 0.85) * 1.8
-  const orbitSpeed = 0.18 / (index + 1)
+  const orbitRadius = (0.6 + index * 0.85) * 1.8
+  const orbitSpeed = 0.22 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
   const color = point.seeded ? '#55a594' : '#4DA3FF'
-  const planetScale = 0.08 + Math.max(0, 0.05 * (totalCount - index))
+  const planetScale = 0.28 + Math.max(0, 0.05 * (totalCount - index))
 
   useFrame(({ clock }) => {
     if (!orbitRef.current) return
