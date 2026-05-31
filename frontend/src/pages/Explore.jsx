@@ -364,16 +364,6 @@ export default function Explore() {
                 </>
               )}
 
-              {selectedUser.top_genres?.length > 0 && (
-                <>
-                  <div className={styles.tagLabel}>Genres</div>
-                  <div className={styles.tagRow}>
-                    {selectedUser.top_genres.map((genre) => (
-                      <span key={genre} className={`${styles.tag} ${styles.tagGenre}`}>{genre}</span>
-                    ))}
-                  </div>
-                </>
-              )}
             </div>
 
             {selectedUser.user_id === currentUserId && userSources.length > 1 && (
