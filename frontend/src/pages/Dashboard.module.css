@@ -192,11 +192,19 @@
   margin-top: 10px;
 }
 
-.metaLabelPurple {
+.sourceMetaPurple {
   color: #d7d0ff;
 }
 
-.metaLabelPink {
+.sourceMetaPink {
+  color: #ffb2ff;
+}
+
+.successPurple {
+  color: #d7d0ff;
+}
+
+.successPink {
   color: #ffb2ff;
 }
 
