@@ -50,7 +50,7 @@ function buildOrbitLayout(points) {
 
 function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
-  const orbitSpeed = 0.18 / (index + 1)
+  const orbitSpeed = 0.12 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
   const color = colorForPoint(point)
   const similarityFactor = point.similarity ?? 0.5
@@ -114,7 +114,7 @@ function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
         return (
           <mesh key={`ring-${point.user_id}`} rotation-x={-Math.PI / 2}>
             <ringGeometry args={[orbitRadius - 0.02, orbitRadius + 0.02, 64]} />
-            <meshBasicMaterial color="#ffd166" transparent opacity={0.05} side={THREE.DoubleSide} />
+            <meshBasicMaterial color="#ffd166" transparent opacity={0.04} side={THREE.DoubleSide} />
           </mesh>
         )
       })}
