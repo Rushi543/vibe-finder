@@ -5,11 +5,11 @@ import * as THREE from 'three'
 
 function OrbitingPlanet({ point, index, totalCount, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
-  const orbitRadius = (0.6 + index * 0.85) * 1.8
-  const orbitSpeed = 0.22 / (index + 1)
+  const orbitRadius = (0.9 + index * 0.85) * 1.8
+  const orbitSpeed = 0.18 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
   const color = point.seeded ? '#55a594' : '#4DA3FF'
-  const planetScale = 0.28 + Math.max(0, 0.05 * (totalCount - index))
+  const planetScale = 0.12 + Math.max(0, 0.07 * (totalCount - index))
 
   useFrame(({ clock }) => {
     if (!orbitRef.current) return
@@ -52,7 +52,7 @@ function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
 
       {centerPoint && (
         <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[0.16, 18, 18]} />
+          <sphereGeometry args={[0.24, 22, 22]} />
           <meshStandardMaterial emissive="#ffd166" color="#ffd166" roughness={0.2} metalness={0.35} />
         </mesh>
       )}
