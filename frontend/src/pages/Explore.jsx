@@ -342,9 +342,16 @@ export default function Explore() {
           )}
         </>
       )}
-
       {hoveredUser && (
-        <div className={styles.tooltip} style={{ left: tooltipPos.x + 14, top: tooltipPos.y - 10 }}>
+        <div
+          className={styles.tooltip}
+          style={{
+            left: tooltipPos.x + 14 + 200 > window.innerWidth
+              ? tooltipPos.x - 214
+              : tooltipPos.x + 14,
+            top: tooltipPos.y - 10,
+          }}
+        >
           <strong>{displayNameFor(hoveredUser)}</strong>
           {hoveredUser.sources?.length > 0 && (
             <span className={styles.tooltipSources}> | {hoveredUser.sources.join(' + ')}</span>
