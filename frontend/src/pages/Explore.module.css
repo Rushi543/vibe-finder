@@ -95,8 +95,7 @@
 
 .tooltip {
   position: absolute;
-  right:auto;
-  left: auto;
+  left: 0;
   z-index: 3;
   padding: 8px 12px;
   border-radius: 14px;
