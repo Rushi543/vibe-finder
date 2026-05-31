@@ -95,7 +95,9 @@
 
 .tooltip {
   position: absolute;
-  z-index: 10;
+  right:auto;
+  left: auto;
+  z-index: 3;
   padding: 8px 12px;
   border-radius: 14px;
   border: 1px solid var(--border);
@@ -103,7 +105,6 @@
   backdrop-filter: blur(12px);
   pointer-events: none;
   font-size: 0.78rem;
-  max-width: 200px;
 }
 
 .tooltipSources {

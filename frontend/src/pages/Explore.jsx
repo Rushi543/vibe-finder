@@ -271,6 +271,22 @@ export default function Explore() {
     }, 350)
   }
 
+  async function handleViewModeChange(nextMode) {
+    setViewMode(nextMode)
+
+    if (nextMode !== 'galaxy') return
+
+    const centerPoint = activeGraphPoint || myPoint
+    if (!centerPoint) return
+
+    setSelectedUser(centerPoint)
+    setActiveGraphUserId(centerPoint.user_id)
+
+    if (activeGraphUserId === centerPoint.user_id && matches.length > 0) return
+
+    await fetchMatchesForUser(centerPoint.user_id)
+  }
+
   const myPoint = points.find((point) => point.user_id === currentUserId)
   const activeGraphPoint = points.find((point) => point.user_id === activeGraphUserId) || selectedUser
   const visiblePoints = showSeeded ? points : points.filter((point) => !point.seeded)
@@ -292,14 +308,14 @@ export default function Explore() {
             <button
               type="button"
               className={viewMode === 'space' ? `${styles.viewButton} ${styles.viewButtonActive}` : styles.viewButton}
-              onClick={() => setViewMode('space')}
+              onClick={() => handleViewModeChange('space')}
             >
               Space
             </button>
             <button
               type="button"
               className={viewMode === 'galaxy' ? `${styles.viewButton} ${styles.viewButtonActive}` : styles.viewButton}
-              onClick={() => setViewMode('galaxy')}
+              onClick={() => handleViewModeChange('galaxy')}
             >
               Galaxy
             </button>
