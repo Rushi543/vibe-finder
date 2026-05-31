@@ -302,6 +302,12 @@ export default function Explore() {
             )}
             <OrbitControls enableDamping dampingFactor={0.06} autoRotate={!panelOpen} autoRotateSpeed={0.35} />
           </Canvas>
+          {viewMode === 'galaxy' && !(activeGraphPoint || myPoint) && (
+            <div className={styles.emptyGalaxy}>Select a profile to view the galaxy system.</div>
+          )}
+          {viewMode === 'galaxy' && (activeGraphPoint || myPoint) && matches.length === 0 && (
+            <div className={styles.emptyGalaxy}>No similar profiles yet. Select a profile or reconnect a source to fill the orbit.</div>
+          )}
         </>
       )}
       {hoveredUser && (
