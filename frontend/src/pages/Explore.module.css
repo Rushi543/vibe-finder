@@ -118,6 +118,50 @@
   gap: 10px;
 }
 
+.headerRightGroup {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.viewSwitch {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(12, 15, 24, 0.85);
+}
+
+.viewButton {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.viewButtonActive {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.emptyGalaxy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+  font-size: 0.96rem;
+  background: rgba(7, 10, 16, 0.45);
+  backdrop-filter: blur(6px);
+}
+
 .toggle {
   display: inline-flex;
   align-items: center;

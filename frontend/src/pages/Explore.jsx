@@ -129,6 +129,56 @@ function Scene({ points, currentUserId, selectedUserId, matchUserIds, onNodeClic
   )
 }
 
+function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
+  const sortedMatches = [...matchPoints].sort((a, b) => b.similarity - a.similarity)
+
+  return (
+    <>
+      <ambientLight intensity={0.35} color="#1a1a2e" />
+      <pointLight position={[0, 5, 0]} intensity={2.1} color="#ffd166" />
+      <Stars radius={35} depth={25} count={600} factor={2} fade />
+
+      {centerPoint && (
+        <mesh position={[0, 0, 0]}>
+          <sphereGeometry args={[0.16, 18, 18]} />
+          <meshStandardMaterial emissive="#ffd166" color="#ffd166" roughness={0.2} metalness={0.35} />
+        </mesh>
+      )}
+
+      {sortedMatches.map((point, index) => {
+        const orbitRadius = 0.9 + index * 0.85
+        const angle = (index / sortedMatches.length) * Math.PI * 2
+        const x = Math.cos(angle) * orbitRadius * 1.8
+        const z = Math.sin(angle) * orbitRadius * 1.8
+        const planetScale = 0.08 + Math.max(0, 0.05 * (sortedMatches.length - index))
+        const color = point.seeded ? '#55a594' : '#4DA3FF'
+
+        return (
+          <group key={point.user_id}>
+            <mesh rotation-x={-Math.PI / 2}>
+              <ringGeometry args={[orbitRadius - 0.02, orbitRadius + 0.02, 64]} />
+              <meshBasicMaterial color="rgba(255, 209, 102, 0.14)" transparent opacity={0.25} side={THREE.DoubleSide} />
+            </mesh>
+            <mesh
+              position={[x, 0, z]}
+              scale={planetScale}
+              onClick={(event) => {
+                event.stopPropagation()
+                onNodeClick(point)
+              }}
+              onPointerOver={() => onNodeHover(point)}
+              onPointerOut={() => onNodeHover(null)}
+            >
+              <sphereGeometry args={[0.05, 12, 12]} />
+              <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.7} roughness={0.3} metalness={0.4} />
+            </mesh>
+          </group>
+        )
+      })}
+    </>
+  )
+}
+
 export default function Explore() {
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -146,6 +196,7 @@ export default function Explore() {
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })
   const [weights, setWeights] = useState({ github: 1, steam: 1 })
   const [userSources, setUserSources] = useState([])
+  const [viewMode, setViewMode] = useState('space')
   const [showSeeded, setShowSeeded] = useState(true)
   const debounceRef = useRef(null)
 
@@ -235,7 +286,25 @@ export default function Explore() {
           Back to dashboard
         </button>
         <span className={styles.logo}>Vibe<span>Finder</span></span>
-        <span className={styles.count}>{visiblePoints.length} profiles</span>
+        <div className={styles.headerRightGroup}>
+          <span className={styles.count}>{visiblePoints.length} profiles</span>
+          <div className={styles.viewSwitch}>
+            <button
+              type="button"
+              className={viewMode === 'space' ? `${styles.viewButton} ${styles.viewButtonActive}` : styles.viewButton}
+              onClick={() => setViewMode('space')}
+            >
+              Space
+            </button>
+            <button
+              type="button"
+              className={viewMode === 'galaxy' ? `${styles.viewButton} ${styles.viewButtonActive}` : styles.viewButton}
+              onClick={() => setViewMode('galaxy')}
+            >
+              Galaxy
+            </button>
+          </div>
+        </div>
       </header>
 
       {loading ? (
@@ -244,17 +313,34 @@ export default function Explore() {
           <p>Mapping the space...</p>
         </div>
       ) : (
-        <Canvas className={styles.canvas} camera={{ position: [0, 0, 5], fov: 60 }}>
-          <Scene
-            points={visiblePoints}
-            currentUserId={currentUserId}
-            selectedUserId={activeGraphUserId}
-            matchUserIds={visibleMatchUserIds}
-            onNodeClick={handleNodeClick}
-            onNodeHover={setHoveredUser}
-          />
-          <OrbitControls enableDamping dampingFactor={0.06} autoRotate={!panelOpen} autoRotateSpeed={0.35} />
-        </Canvas>
+        <>
+          <Canvas className={styles.canvas} camera={{ position: [0, 0, 6], fov: 60 }}>
+            {viewMode === 'space' ? (
+              <Scene
+                points={visiblePoints}
+                currentUserId={currentUserId}
+                selectedUserId={activeGraphUserId}
+                matchUserIds={visibleMatchUserIds}
+                onNodeClick={handleNodeClick}
+                onNodeHover={setHoveredUser}
+              />
+            ) : (
+              <GalaxyScene
+                centerPoint={activeGraphPoint || myPoint}
+                matchPoints={matches}
+                onNodeClick={handleNodeClick}
+                onNodeHover={setHoveredUser}
+              />
+            )}
+            <OrbitControls enableDamping dampingFactor={0.06} autoRotate={!panelOpen} autoRotateSpeed={0.35} />
+          </Canvas>
+          {viewMode === 'galaxy' && (!activeGraphPoint && !myPoint) && (
+            <div className={styles.emptyGalaxy}>Select a profile to view the galaxy system.</div>
+          )}
+          {viewMode === 'galaxy' && (activeGraphPoint || myPoint) && matches.length === 0 && (
+            <div className={styles.emptyGalaxy}>No similar profiles yet. Select a profile or reconnect a source to fill the orbit.</div>
+          )}
+        </>
       )}
 
       {hoveredUser && (
