@@ -50,11 +50,13 @@ function buildOrbitLayout(points) {
 
 function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
+  const verticalOffset = ((index % 5) - 2) * 0.3
   const orbitSpeed = 0.18 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
   const color = colorForPoint(point)
   const similarityFactor = point.similarity ?? 0.5
-  const planetScale = 0.4 + similarityFactor * 0.8
+  const planetScale = (0.4 + similarityFactor * 0.8) * 3
+  const hasPlanetRing = index < 3
 
   useFrame(({ clock }) => {
     if (!orbitRef.current) return
@@ -64,7 +66,7 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
   return (
     <group ref={orbitRef}>
       <mesh
-        position={[orbitRadius, 0, 0]}
+        position={[orbitRadius, verticalOffset, 0]}
         scale={planetScale}
         onClick={(event) => {
           event.stopPropagation()
@@ -72,7 +74,7 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
         }}
         onPointerOver={() => onNodeHover(point)}
         onPointerOut={() => onNodeHover(null)}
-      >
+        >
         <sphereGeometry args={[0.05, 12, 12]} />
         <meshStandardMaterial
           color={color}
@@ -82,6 +84,12 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
           metalness={0.4}
         />
       </mesh>
+      {hasPlanetRing && (
+        <mesh position={[orbitRadius, verticalOffset, 0]} rotation-x={-Math.PI / 2} scale={planetScale}>
+          <ringGeometry args={[0.08, 0.13, 48]} />
+          <meshBasicMaterial color={color} transparent opacity={0.28} side={THREE.DoubleSide} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -89,6 +97,13 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
 function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
   const sortedMatches = [...matchPoints].sort((a, b) => b.similarity - a.similarity)
   const orbitLayout = buildOrbitLayout(sortedMatches)
+  const sunRef = useRef(null)
+
+  useFrame(({ clock }) => {
+    if (!sunRef.current) return
+    const pulse = 1 + Math.sin(clock.elapsedTime * 2) * 0.05
+    sunRef.current.scale.setScalar(pulse)
+  })
 
   return (
     <>
@@ -97,7 +112,7 @@ function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
       <Stars radius={100} depth={50} count={5000} factor={5} saturation={0} fade />
 
       {centerPoint && (
-        <mesh position={[0, 0, 0]}>
+        <mesh ref={sunRef} position={[0, 0, 0]}>
           <sphereGeometry args={[0.8, 48, 48]} />
           <meshStandardMaterial emissive="#ffd166" emissiveIntensity={3} color="#ffd166" roughness={0.2} metalness={0.35} />
         </mesh>
@@ -107,7 +122,7 @@ function GalaxyScene({ centerPoint, matchPoints, onNodeClick, onNodeHover }) {
         return (
           <mesh key={`ring-${point.user_id}`} rotation-x={-Math.PI / 2}>
             <ringGeometry args={[orbitRadius - 0.02, orbitRadius + 0.02, 64]} />
-            <meshBasicMaterial color="#ffd166" transparent opacity={0.12} side={THREE.DoubleSide} />
+            <meshBasicMaterial color="#ffd166" transparent opacity={0.05} side={THREE.DoubleSide} />
           </mesh>
         )
       })}
