@@ -59,10 +59,10 @@ export default function Dashboard() {
         top_topics: user.top_topics || [],
       })
       setAnilistMeta({
-        top_anime: user.top_anime || [],
+        // top_anime: user.top_anime || [],
         top_genres: user.top_genres || [],
         top_favorites: user.top_favorites || [],
-        top_fav_manga: user.top_fav_manga || [],
+        // top_fav_manga: user.top_fav_manga || [],
       })
       // If steam metadata exists, show a summary message
       if (user.top_games && user.top_games.length) {
@@ -174,7 +174,7 @@ export default function Dashboard() {
                 </button>
                 {isConnected('github') && (
                   <div className={styles.sourceMeta}>
-                    <div><strong>Top languages:</strong> {(githubMeta.top_languages || []).slice(0,3).join(', ') || '—'}</div>
+                    <div><strong className={styles.metaLabelPurple}>Top languages:</strong> {(githubMeta.top_languages || []).slice(0,3).join(', ') || '—'}</div>
                     <div><strong>Top topics:</strong> {(githubMeta.top_topics || []).slice(0,3).join(', ') || '—'}</div>
                   </div>
                 )}
@@ -253,8 +253,8 @@ export default function Dashboard() {
             {anilistSuccess && <div className={styles.success}>{anilistSuccess}</div>}
             {isConnected('anilist') && !anilistSuccess && (
               <div className={styles.sourceMeta}>
-                <div><strong>Top anime:</strong> {(anilistMeta.top_anime || []).slice(0,2).join(', ') || '—'}</div>
-                <div><strong>Favorites:</strong> {(anilistMeta.top_favorites || []).slice(0,3).join(', ') || '—'}</div>
+                <div><strong className={styles.metaLabelPink}>Top anime:</strong> {(anilistMeta.top_anime || []).slice(0,2).join(', ') || '—'}</div>
+                <div><strong className={styles.metaLabelPink}>Favorites:</strong> {(anilistMeta.top_favorites || []).slice(0,3).join(', ') || '—'}</div>
                 <div><strong>Favorite manga:</strong> {(anilistMeta.top_fav_manga || []).slice(0,3).join(', ') || '—'}</div>
                 <div><strong>Top genres:</strong> {(anilistMeta.top_genres || []).slice(0,3).join(', ') || '—'}</div>
               </div>

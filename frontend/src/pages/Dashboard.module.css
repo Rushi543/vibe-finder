@@ -186,6 +186,20 @@
   font-size: 0.86rem;
 }
 
+.sourceMeta {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.metaLabelPurple {
+  color: #d7d0ff;
+}
+
+.metaLabelPink {
+  color: #ffb2ff;
+}
+
 .connectedBadge {
   border-radius: 999px;
   background: rgba(106, 255, 212, 0.14);
