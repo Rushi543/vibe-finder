@@ -50,13 +50,11 @@ function buildOrbitLayout(points) {
 
 function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, onNodeHover }) {
   const orbitRef = useRef(null)
-  const verticalOffset = ((index % 5) - 2) * 0.3
   const orbitSpeed = 0.18 / (index + 1)
   const startingAngle = totalCount > 0 ? (index / totalCount) * Math.PI * 2 : 0
   const color = colorForPoint(point)
   const similarityFactor = point.similarity ?? 0.5
   const planetScale = (0.4 + similarityFactor * 0.8) * 3
-  const hasPlanetRing = index < 3
 
   useFrame(({ clock }) => {
     if (!orbitRef.current) return
@@ -66,7 +64,7 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
   return (
     <group ref={orbitRef}>
       <mesh
-        position={[orbitRadius, verticalOffset, 0]}
+        position={[orbitRadius, 0, 0]}
         scale={planetScale}
         onClick={(event) => {
           event.stopPropagation()
@@ -84,12 +82,6 @@ function OrbitingPlanet({ point, index, totalCount, orbitRadius, onNodeClick, on
           metalness={0.4}
         />
       </mesh>
-      {hasPlanetRing && (
-        <mesh position={[orbitRadius, verticalOffset, 0]} rotation-x={-Math.PI / 2} scale={planetScale}>
-          <ringGeometry args={[0.08, 0.13, 48]} />
-          <meshBasicMaterial color={color} transparent opacity={0.28} side={THREE.DoubleSide} />
-        </mesh>
-      )}
     </group>
   )
 }
