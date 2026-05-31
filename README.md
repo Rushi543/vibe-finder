@@ -52,5 +52,4 @@ Copy `.env.example` to `.env` in both the root and `frontend-app/` and fill in y
 
 ```bash
 python seed.py          # seeds GitHub profiles
-python seed.py anilist  # seeds AniList profiles
 ```
