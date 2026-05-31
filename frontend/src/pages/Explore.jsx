@@ -11,7 +11,7 @@ const PROFILE_COLORS = {
   profile: '#7c6aff',
   seeded: '#55a594',
   match: '#f4d35e',
-  currentUser: '#3B82F6',
+  currentUser: '#4DA3FF',
   selected: '#ff5f87',
 }
 
@@ -44,26 +44,40 @@ function Node({ point, isCurrentUser, isSelected, isMatch, onClick, onHover }) {
   })
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[point.x * 2.8, point.y * 2.8, point.z * 2.8]}
-      scale={baseScale}
-      onClick={(event) => {
-        event.stopPropagation()
-        onClick(point)
-      }}
-      onPointerOver={() => onHover(point)}
-      onPointerOut={() => onHover(null)}
-    >
-      <sphereGeometry args={[isReal ? 0.05 : 0.04, 12, 12]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={isSelected ? 0.95 : isCurrentUser ? 0.88 : point.seeded ? 0.42 : hasCompleteProfile ? 0.75 : 0.55}
-        roughness={0.32}
-        metalness={0.52}
-      />
-    </mesh>
+    <group position={[point.x * 2.8, point.y * 2.8, point.z * 2.8]}> 
+      {isCurrentUser && (
+        <mesh scale={baseScale * 1.4}>
+          <sphereGeometry args={[isReal ? 0.05 : 0.04, 12, 12]} />
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={0.18}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
+
+      <mesh
+        ref={meshRef}
+        scale={baseScale}
+        onClick={(event) => {
+          event.stopPropagation()
+          onClick(point)
+        }}
+        onPointerOver={() => onHover(point)}
+        onPointerOut={() => onHover(null)}
+      >
+        <sphereGeometry args={[isReal ? 0.05 : 0.04, 12, 12]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={isSelected ? 0.95 : isCurrentUser ? 1.1 : point.seeded ? 0.42 : hasCompleteProfile ? 0.75 : 0.55}
+          roughness={0.32}
+          metalness={0.52}
+        />
+      </mesh>
+    </group>
   )
 }
 
