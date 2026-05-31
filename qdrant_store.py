@@ -12,6 +12,8 @@ from qdrant_client.models import (
 from dotenv import load_dotenv
 import hashlib
 
+from match_explainer import get_match_explanation
+
 load_dotenv()
 
 COLLECTION_NAME = "vibe_users"
@@ -214,13 +216,19 @@ def find_similar_users(user_id: str, top_k: int = 5):
         collection_name=COLLECTION_NAME,
         ids=[point_id],
         with_vectors=True,
+        with_payload=True,
     )
     if not results:
         return None
-    exclude_username = None
-    if results[0].payload:
-        exclude_username = results[0].payload.get("username")
-    return _search_similar(results[0].vector, user_id, top_k, exclude_username)
+    user_payload = results[0].payload or {}
+    exclude_username = user_payload.get("username")
+    return _search_similar(
+        results[0].vector,
+        user_id,
+        top_k,
+        user_payload,
+        exclude_username,
+    )
 
 
 def find_similar_weighted(user_id: str, weights: dict, top_k: int = 5):
@@ -235,22 +243,32 @@ def find_similar_weighted(user_id: str, weights: dict, top_k: int = 5):
     )
     if not results:
         return None
-    source_vectors = results[0].payload.get("source_vectors", {})
+    user_payload = results[0].payload or {}
+    source_vectors = user_payload.get("source_vectors", {})
     if not source_vectors:
         return None
     query_vector = fuse_vectors(source_vectors, weights)
-    return _search_similar(query_vector, user_id, top_k, results[0].payload.get("username"))
+    return _search_similar(
+        query_vector,
+        user_id,
+        top_k,
+        user_payload,
+        user_payload.get("username"),
+    )
 
 
 def _search_similar(
     query_vector: list,
     exclude_user_id: str,
     top_k: int,
+    user_payload: dict,
     exclude_username: str | None = None,
 ) -> list:
     exclude_values = {exclude_user_id}
     if exclude_username:
         exclude_values.add(exclude_username)
+
+    query_profile = _normalize_payload(user_payload)
 
     hits = client.query_points(
         collection_name=COLLECTION_NAME,
@@ -269,7 +287,11 @@ def _search_similar(
         if exclude_values.intersection(hit_id for hit_id in hit_ids if hit_id):
             continue
 
-        matches.append(normalized | {"similarity": round(hit.score, 4)})
+        explanation = get_match_explanation(query_profile, normalized)
+        matches.append(
+            normalized
+            | {"similarity": round(hit.score, 4), "explanation": explanation}
+        )
         if len(matches) >= top_k:
             break
 

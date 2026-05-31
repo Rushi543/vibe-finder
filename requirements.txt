@@ -6,3 +6,4 @@ sentence-transformers
 qdrant-client
 numpy
 umap-learn==0.5.12
+openai

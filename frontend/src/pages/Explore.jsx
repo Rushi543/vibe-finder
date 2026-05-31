@@ -407,6 +407,9 @@ export default function Explore() {
                       >
                         <div className={styles.matchName}>{displayNameFor(match)}</div>
                         <div className={styles.matchSim}>{(match.similarity * 100).toFixed(1)}% similarity</div>
+                        {match.explanation && (
+                          <div className={styles.matchExplanation}>{match.explanation}</div>
+                        )}
                         <div className={styles.simBar}>
                           <div className={styles.simFill} style={{ width: `${match.similarity * 100}%` }} />
                         </div>

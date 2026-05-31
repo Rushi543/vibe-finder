@@ -332,6 +332,14 @@
   margin-bottom: 8px;
 }
 
+.matchExplanation {
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  opacity: 0.92;
+}
+
 .simBar {
   width: 100%;
   height: 4px;
