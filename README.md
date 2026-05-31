@@ -1,55 +1,114 @@
 # VibeFinder
 
-VibeFinder maps people as vectors. Connect your GitHub, Steam, and AniList accounts and find 
-developers who share your technical identity, gaming taste, and anime interests — all at once, 
-or reweighted however you like.
+VibeFinder is a social matching app built for the Qdrant Vector Space Hackathon. It lets a user sign in, connect identity and interest sources, turn them into vectors, and explore similar profiles in an interactive 3D scene.
 
-Built for the Qdrant Vector Space Hackathon.
+Today the app supports:
 
-## Live demo
+- `GitHub` for repos, stars, languages, and topics
+- `Steam` for games, playtime, and genres
+- `AniList` for anime favorites, genres, and related taste signals
 
-https://vibe-finder-eta.vercel.app
+## What the app does
+
+After signing in with Supabase, a user can connect one or more sources from the dashboard. Each source is embedded separately, merged into a single stored profile in Qdrant, and then surfaced in the explore experience.
+
+The explore page currently includes:
+
+- A `Space` view for the full UMAP map of profiles
+- A `Galaxy` view where the selected user becomes the sun and nearest matches orbit around them
+- Live match explanations shown in the side panel
+- Reweighting sliders for a user with multiple connected sources
+- Hover tooltips, match cards, similarity bars, and seeded-profile visibility toggles
+
+The galaxy view now includes:
+
+- Similarity-aware orbit spacing
+- Animated orbiting planets
+- A pulsing sun
+- Bloom/glow postprocessing
+- Source-based planet coloring
 
 ## How it works
 
-Each connected source is embedded independently:
-
-- **GitHub** — repo descriptions, starred projects, languages and topics → sentence-transformers
-- **Steam** — game names, genres, playtime-weighted → sentence-transformers  
-- **AniList** — genres, tags, favourites, watch-time-weighted → sentence-transformers
-
-The three vectors are fused into a single weighted personality vector and stored in Qdrant. 
-UMAP reduces the full collection to 3D coordinates for spatial exploration.
-
-The key interaction: sliders reweight the fusion vector live and re-query Qdrant in real time — 
-so you can find your coding twin, your gaming twin, or your anime twin from the same profile.
+1. Each source is fetched and embedded independently.
+2. Source vectors are merged into a single profile vector.
+3. The profile is stored in Qdrant with useful metadata for the UI.
+4. Match queries return nearest neighbors plus short natural-language explanations.
+5. UMAP reduces the stored vectors into 3D coordinates for the map view.
 
 ## Stack
 
-- **Frontend:** React + Vite + React Three Fiber
-- **Backend:** FastAPI + Python
-- **Vector DB:** Qdrant Cloud
-- **Embeddings:** sentence-transformers (`all-MiniLM-L6-v2`)
-- **Dimensionality reduction:** UMAP → 3D
-- **Auth:** Supabase (Google OAuth)
+- Frontend: `React`, `Vite`, `React Router`, `React Three Fiber`, `@react-three/drei`, `@react-three/postprocessing`
+- Backend: `FastAPI`, `Python`
+- Vector store: `Qdrant`
+- Embeddings: `sentence-transformers`
+- Auth: `Supabase` auth in the frontend, with Google sign-in used in the current UI
+- Visualization: `UMAP` to 3D
 
-## Run locally
+## Project structure
+
+```text
+.
+├─ frontend/                 # React app
+├─ main.py                   # FastAPI app
+├─ qdrant_store.py           # vector storage + similarity search
+├─ match_explainer.py        # natural-language match explanations
+├─ seed.py                   # seeded demo profiles
+└─ umap_compute.py           # 3D projection for explore view
+```
+
+## Local setup
+
+### 1. Install backend dependencies
 
 ```bash
-# Backend
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+```
 
-# Frontend
-cd frontend-app
+### 2. Configure environment variables
+
+Copy and fill:
+
+- root `.env` from `.env.example`
+- `frontend/.env`
+
+At minimum you will need values for your API URL, Supabase project, and any source integrations you want to enable.
+
+### 3. Run the backend
+
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+### 4. Run the frontend
+
+```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-Copy `.env.example` to `.env` in both the root and `frontend-app/` and fill in your keys.
-
-## Seeding
+## Seeding demo profiles
 
 ```bash
-python seed.py          # seeds GitHub profiles
+python seed.py
 ```
+
+This adds seeded comparison profiles so the explore scene is more interesting before many real users connect data.
+
+## API notes
+
+The current frontend uses these main backend endpoints:
+
+- `GET /users/{user_id}`
+- `GET /umap`
+- `GET /matches/{user_id}`
+- `POST /matches/weighted`
+- `GET /auth/github/start`
+- `POST /steam/connect`
+- `POST /anilist/connect`
+
+## Current caveats
+
+- The frontend production build still reports a large chunk-size warning from Vite.
+- There are a few legacy backend pieces still present in the repo, such as Spotify-related code, even though the current UI focuses on GitHub, Steam, and AniList.

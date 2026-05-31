@@ -3,18 +3,16 @@ import os
 from pathlib import Path
 from typing import Any
 
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
 
-try:
-    import openai
-except ImportError:
-    openai = None
-
 CACHE_FILE = Path(__file__).with_name('match_explanations_cache.json')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.1-8b-instant')
 
 
 def _load_cache() -> dict[str, str]:
@@ -106,7 +104,7 @@ def _deterministic_explanation(match_label: str, overlaps: dict[str, list[str]])
     if overlaps['topics']:
         pieces.append(f"share interests in { _humanize_list(overlaps['topics']) }")
     if overlaps['games']:
-        pieces.append(f"enjoy { _humanize_list(overlaps['games']) }")
+        pieces.append(f"you both enjoy { _humanize_list(overlaps['games']) }")
     if overlaps['genres']:
         pieces.append(f"prefer { _humanize_list(overlaps['genres']) } genres")
     if overlaps['anime']:
@@ -129,27 +127,58 @@ def _deterministic_explanation(match_label: str, overlaps: dict[str, list[str]])
     return explanation
 
 
-def _generate_with_openai(prompt: str) -> str | None:
-    if not openai or not OPENAI_API_KEY:
+def _generate_with_chat_api(prompt: str, *, api_key: str, model: str, base_url: str) -> str | None:
+    if not api_key:
         return None
-    openai.api_key = OPENAI_API_KEY
+
     try:
-        response = openai.ChatCompletion.create(
-            model=OPENAI_MODEL,
-            messages=[
-                {
-                    'role': 'system',
-                    'content': 'You are a concise match explainer that uses only the overlap information supplied. Write natural, complete sentences in 2-4 sentences. Do not invent details or output fragments.',
-                },
-                {'role': 'user', 'content': prompt},
-            ],
-            temperature=0.25,
-            max_tokens=120,
+        response = httpx.post(
+            f'{base_url}/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'model': model,
+                'messages': [
+                    {
+                        'role': 'system',
+                        'content': 'You are a concise match explainer that uses only the overlap information supplied. Write natural, complete sentences in 2-4 sentences. Do not invent details or output fragments.',
+                    },
+                    {'role': 'user', 'content': prompt},
+                ],
+                'temperature': 0.25,
+                'max_tokens': 120,
+            },
+            timeout=20.0,
         )
-        text = response.choices[0].message.content.strip()
-        return text
+        response.raise_for_status()
+        payload = response.json()
+        text = payload['choices'][0]['message']['content'].strip()
+        return text or None
     except Exception:
         return None
+
+
+def _generate_with_llm(prompt: str) -> str | None:
+    # Prefer Groq when configured because this project currently stores a Groq key.
+    if GROQ_API_KEY:
+        return _generate_with_chat_api(
+            prompt,
+            api_key=GROQ_API_KEY,
+            model=GROQ_MODEL,
+            base_url='https://api.groq.com/openai/v1',
+        )
+
+    if OPENAI_API_KEY:
+        return _generate_with_chat_api(
+            prompt,
+            api_key=OPENAI_API_KEY,
+            model=OPENAI_MODEL,
+            base_url='https://api.openai.com/v1',
+        )
+
+    return None
 
 
 def get_match_explanation(user_profile: dict[str, Any], match_profile: dict[str, Any]) -> str:
@@ -162,7 +191,7 @@ def get_match_explanation(user_profile: dict[str, Any], match_profile: dict[str,
 
     overlaps = _build_overlap_data(user_profile, match_profile)
     prompt = _build_prompt(match_profile.get('label') or match_id, overlaps)
-    explanation = _generate_with_openai(prompt) or _deterministic_explanation(match_profile.get('label') or match_id, overlaps)
+    explanation = _generate_with_llm(prompt) or _deterministic_explanation(match_profile.get('label') or match_id, overlaps)
     cache[cache_key] = explanation
     _save_cache(cache)
     return explanation
