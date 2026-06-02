@@ -1,15 +1,6 @@
 from collections import Counter
-from sentence_transformers import SentenceTransformer
 import numpy as np
-
-model = None
-
-
-def get_model():
-    global model
-    if model is None:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-    return model
+from embedding_model import get_embedding_model
 
 
 def build_text_corpus(github_data: dict) -> list:
@@ -35,7 +26,7 @@ def embed_github_data(github_data: dict) -> tuple:
     if not chunks:
         chunks = [github_data["username"]]
 
-    embeddings = get_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
+    embeddings = get_embedding_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
     user_vector = np.mean(embeddings, axis=0)
     norm = np.linalg.norm(user_vector)
     if norm > 0:

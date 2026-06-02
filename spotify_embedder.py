@@ -1,14 +1,5 @@
-from sentence_transformers import SentenceTransformer
 import numpy as np
-
-model = None
-
-
-def get_model():
-    global model
-    if model is None:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-    return model
+from embedding_model import get_embedding_model
 
 
 def build_spotify_corpus(spotify_data: dict) -> list[str]:
@@ -39,7 +30,7 @@ def embed_spotify_data(spotify_data: dict) -> tuple[list[float], dict]:
     if not chunks:
         chunks = ["music listener"]
 
-    embeddings = get_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
+    embeddings = get_embedding_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
     user_vector = np.mean(embeddings, axis=0)
 
     norm = np.linalg.norm(user_vector)

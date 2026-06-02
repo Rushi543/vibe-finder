@@ -1,15 +1,6 @@
-from sentence_transformers import SentenceTransformer
 import numpy as np
 from collections import Counter
-
-model = None
-
-
-def get_model():
-    global model
-    if model is None:
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-    return model
+from embedding_model import get_embedding_model
 
 # Genre/tag mappings for common Steam app IDs
 # We'll enrich this via the Steam store API per game
@@ -47,7 +38,7 @@ def embed_steam_data(steam_data: dict) -> tuple:
     """
     chunks = build_steam_corpus(steam_data)
 
-    embeddings = get_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
+    embeddings = get_embedding_model().encode(chunks, convert_to_numpy=True, show_progress_bar=False)
     user_vector = np.mean(embeddings, axis=0)
 
     norm = np.linalg.norm(user_vector)

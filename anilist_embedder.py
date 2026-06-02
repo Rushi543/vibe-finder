@@ -1,6 +1,4 @@
-from sentence_transformers import SentenceTransformer
-
-model = SentenceTransformer("all-MiniLM-L6-v2")
+from embedding_model import get_embedding_model
 
 
 def embed_anilist_data(anilist_data: dict) -> tuple[list, dict]:
@@ -41,7 +39,7 @@ def embed_anilist_data(anilist_data: dict) -> tuple[list, dict]:
     full_text = " ".join(text_parts)
 
     # Generate embedding
-    vector = model.encode(full_text, convert_to_tensor=True).tolist()
+    vector = get_embedding_model().encode(full_text, convert_to_tensor=True).tolist()
 
     # Top 3 genres
     top_genres = all_genres[:3] if all_genres else []
